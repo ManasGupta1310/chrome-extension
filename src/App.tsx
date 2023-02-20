@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable react/button-has-type */
 import React, { useEffect, useState } from 'react';
+import Button from '@mui/material/Button';
 import { ChromeMessage, Sender } from './types';
-
 import './App.css';
 
 export function App() {
@@ -55,7 +55,7 @@ export function App() {
     <div className="App">
       <header className="App-header">
         <p>{pageTitle}</p>
-        <button onClick={sendTestMessage}>Click</button>
+        <Button variant="contained" onClick={sendTestMessage}>Download</Button>
       </header>
     </div>
   );
