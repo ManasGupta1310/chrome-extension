@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable react/button-has-type */
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import { ChromeMessage, Sender } from './types';
 
 import './App.css';
 
 export function App() {
   const [pageURL, setPageUrl] = useState<string>('');
-  const [responseFromContent, setResponseFromContent] = useState<string>('');
-
+  const [pageTitle, setPageTitle] = useState<string>('');
   /**
      * Get current URL
      */
@@ -17,10 +15,12 @@ export function App() {
     const queryInfo = { active: true, lastFocusedWindow: true };
 
     chrome.tabs && chrome.tabs.query(queryInfo, (tabs) => {
-      const { url } = tabs[0];
+      const { url, title } = tabs[0];
+      console.log(pageURL);
+      if (title) setPageTitle(title);
       if (url) setPageUrl(url);
     });
-  }, []);
+  }, [pageURL]);
 
   /**
      * Send message to the content script
@@ -28,43 +28,7 @@ export function App() {
   const sendTestMessage = () => {
     const message: ChromeMessage = {
       from: Sender.React,
-      message: 'Hello from React',
-    };
-
-    const queryInfo: chrome.tabs.QueryInfo = {
-      active: true,
-      currentWindow: true,
-    };
-
-    /**
-         * We can't use "chrome.runtime.sendMessage" for sending messages from React.
-         * For sending messages from React we need to specify which tab to send it to.
-         */
-    chrome.tabs && chrome.tabs.query(queryInfo, (tabs) => {
-      const currentTabId = tabs[0].id;
-      /**
-             * Sends a single message to the content script(s) in the specified tab,
-             * with an optional callback to run when a response is sent back.
-             *
-             * The runtime.onMessage event is fired in each content script running
-             * in the specified tab for the current extension.
-             */
-      if (currentTabId) {
-        chrome.tabs.sendMessage(
-          currentTabId,
-          message,
-          (response) => {
-            setResponseFromContent(response);
-          },
-        );
-      }
-    });
-  };
-
-  const sendRemoveMessage = () => {
-    const message: ChromeMessage = {
-      from: Sender.React,
-      message: 'delete logo',
+      message: 'Download Links',
     };
 
     const queryInfo: chrome.tabs.QueryInfo = {
@@ -79,7 +43,8 @@ export function App() {
           currentTabId,
           message,
           (response) => {
-            setResponseFromContent(response);
+            if (!chrome.runtime.lastError) console.log(response);
+            else console.log('Chrome Runtime Error in sending message');
           },
         );
       }
@@ -89,17 +54,8 @@ export function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>URL:</p>
-        <p>
-          {pageURL}
-        </p>
-        <button onClick={sendTestMessage}>SEND MESSAGE</button>
-        <button onClick={sendRemoveMessage}>Remove logo</button>
-        <p>Response from content:</p>
-        <p>
-          {responseFromContent}
-        </p>
+        <p>{pageTitle}</p>
+        <button onClick={sendTestMessage}>Click</button>
       </header>
     </div>
   );
